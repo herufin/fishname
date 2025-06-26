@@ -135,11 +135,35 @@ export default function FishingRandomizer() {
   }
 
   const getFisherPosition = (index: number, total: number) => {
-    const angle = (index / total) * 2 * Math.PI - Math.PI / 2
-    const radius = total > 30 ? 220 : total > 15 ? 200 : 180
-    const x = Math.cos(angle) * radius
-    const y = Math.sin(angle) * radius
-    return { x, y, angle: angle + Math.PI / 2 }
+    const perimeter = 2 * (500 + 400) // width + height of rectangle
+    const spacing = perimeter / total
+    const position = index * spacing
+
+    let x, y, angle
+
+    if (position <= 500) {
+      // Top edge
+      x = position - 250
+      y = -200
+      angle = 0
+    } else if (position <= 500 + 400) {
+      // Right edge
+      x = 250
+      y = position - 500 - 200
+      angle = Math.PI / 2
+    } else if (position <= 500 + 400 + 500) {
+      // Bottom edge
+      x = 250 - (position - 500 - 400)
+      y = 200
+      angle = Math.PI
+    } else {
+      // Left edge
+      x = -250
+      y = 200 - (position - 500 - 400 - 500)
+      angle = -Math.PI / 2
+    }
+
+    return { x, y, angle }
   }
 
   const fadeInAnimation = css`
@@ -237,13 +261,13 @@ export default function FishingRandomizer() {
         {/* Fishing Pond */}
         <div className="relative">
           <Card className="p-8 bg-gradient-to-br from-blue-50 to-teal-50 border-2 border-blue-200 shadow-lg">
-            <div className="relative w-full h-[600px] flex items-center justify-center">
-              {/* Pond */}
-              <div className="absolute w-96 h-96 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full shadow-inner border-4 border-blue-300">
-                <div className="absolute inset-6 bg-gradient-to-br from-blue-300 to-blue-500 rounded-full opacity-70"></div>
-                <div className="absolute inset-12 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full opacity-50"></div>
+            <div className="relative w-full h-[700px] flex items-center justify-center">
+              {/* Pond - changed to rectangular */}
+              <div className="absolute w-[500px] h-[400px] bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl shadow-inner border-4 border-blue-300">
+                <div className="absolute inset-6 bg-gradient-to-br from-blue-300 to-blue-500 rounded-2xl opacity-70"></div>
+                <div className="absolute inset-12 bg-gradient-to-br from-blue-200 to-blue-400 rounded-xl opacity-50"></div>
                 {/* Water ripples */}
-                <div className="absolute inset-0 rounded-full overflow-hidden">
+                <div className="absolute inset-0 rounded-3xl overflow-hidden">
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white opacity-20 rounded-full animate-ping"></div>
                   <div className="absolute top-1/3 left-1/3 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white opacity-30 rounded-full animate-pulse"></div>
                   <div
@@ -268,6 +292,21 @@ export default function FishingRandomizer() {
                   >
                     {/* Fisher character */}
                     <div className="relative flex flex-col items-center">
+                      {/* Name label - moved above character */}
+                      <div
+                        className={`mb-2 px-2 py-1 rounded-full font-medium transition-all duration-300 ${
+                          fishers.length > 30 ? "text-xs" : "text-sm"
+                        } ${
+                          fisher.hasFish
+                            ? "bg-yellow-200 text-yellow-800 border-2 border-yellow-400 animate-pulse"
+                            : "bg-white text-gray-700 border border-gray-300"
+                        }`}
+                        style={{ transform: `rotate(${-pos.angle}rad)` }}
+                      >
+                        {fishers.length > 50
+                          ? fisher.name.substring(0, 8) + (fisher.name.length > 8 ? "..." : "")
+                          : fisher.name}
+                      </div>
                       <div
                         className={`mb-1 transition-all duration-500 ${
                           fishers.length > 30 ? "text-xl" : fishers.length > 15 ? "text-2xl" : "text-3xl"
@@ -336,22 +375,6 @@ export default function FishingRandomizer() {
                             <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
                           )}
                         </div>
-                      </div>
-
-                      {/* Name label */}
-                      <div
-                        className={`mt-2 px-2 py-1 rounded-full font-medium transition-all duration-300 ${
-                          fishers.length > 30 ? "text-xs" : "text-sm"
-                        } ${
-                          fisher.hasFish
-                            ? "bg-yellow-200 text-yellow-800 border-2 border-yellow-400 animate-pulse"
-                            : "bg-white text-gray-700 border border-gray-300"
-                        }`}
-                        style={{ transform: `rotate(${-pos.angle}rad)` }}
-                      >
-                        {fishers.length > 50
-                          ? fisher.name.substring(0, 8) + (fisher.name.length > 8 ? "..." : "")
-                          : fisher.name}
                       </div>
                     </div>
                   </div>
